@@ -9,6 +9,12 @@ meta:
     name: starkandwayne/concourse
     tag: latest
 
+  aws:
+    bucket:     mattermost-boshrelease
+    region_name: us-east-1
+    access_key: (( param "Please set your AWS Access Key ID for your pipeline S3 Bucket" ))
+    secret_key: (( param "Please set your AWS Secret Key ID for your pipeline S3 Bucket" ))
+
   github:
     uri:          (( concat "git@github.com:" meta.github.owner "/" meta.github.repo ))
     owner:        (( param "Please specify the name of the user / organization that owns the Github repository" ))
@@ -30,23 +36,43 @@ meta:
 groups:
   - name: (( grab meta.pipeline ))
     jobs:
-      - latest
+      - check-version
 
 jobs:
-  - name: latest
+  - name: check-version
     public: true
     serial: true
     plan:
     - do:
-      - aggregate:
-        - { get: git, trigger: true }
+      - name: git,
+        get: git
+      - name: check-version
+        task: check-version
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: (( grab meta.image.name ))
+              tag:        (( grab meta.image.tag ))
+          inputs:
+            - name: git
+          outputs:
+            - name: version
+          run:
+            path: ./git/ci/scripts/check-version
+            args: []
+      - put: version
+        params:
+          file: version/number
+
       on_failure:
         put: notify
         params:
           channel:  (( grab meta.slack.channel ))
           username: (( grab meta.slack.username ))
           icon_url: (( grab meta.slack.icon ))
-          text:    '(( concat meta.slack.fail_url " " meta.pipeline ": \"latest job\" failed" ))'
+          text:    '(( concat meta.slack.fail_url " " meta.pipeline ": \"check-version\" job failed" ))'
 
 resource_types:
   - name: slack-notification
@@ -67,9 +93,13 @@ resources:
     source:
       url: (( grab meta.slack.webhook ))
 
-  # - name: github
-  #   type: github-release
-  #   source:
-  #     user:         (( grab meta.github.owner ))
-  #     repository:   (( grab meta.github.repo ))
-  #     access_token: (( grab meta.github.access_token ))
+  - name: version
+    type: semver
+    source :
+      driver:            s3
+      key:               mattermost-version
+      bucket:            (( grab meta.aws.bucket ))
+      region_name:       (( grab meta.aws.region_name ))
+      access_key_id:     (( grab meta.aws.access_key ))
+      secret_access_key: (( grab meta.aws.secret_key ))
+      initial_version:   0.0.1
