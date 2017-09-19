@@ -44,6 +44,9 @@ jobs:
     serial: true
     plan:
     - do:
+      - name: check-mattermost
+        get: check-mattermost
+        trigger: true
       - name: git,
         get: git
       - name: check-version
@@ -87,6 +90,10 @@ resources:
       uri:         (( grab meta.github.uri ))
       branch:      (( grab meta.github.branch ))
       private_key: (( grab meta.github.private_key ))
+
+  - name: check-mattermost
+    type: time
+    source: {interval: 5m}
 
   - name: notify
     type: slack-notification
