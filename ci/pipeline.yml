@@ -85,7 +85,7 @@ jobs:
     - do:
       - name: git,
         get: git
-        passed: [check-version]
+        # passed: [check-version]
       - name: version
         get: version
         trigger: true
