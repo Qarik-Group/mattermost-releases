@@ -1,9 +1,13 @@
 #!/bin/bash
 
+set -e
+
 cp version/number blobs/version
+version=$(cat version/number)
 cd blobs
 
-wget https://releases.mattermost.com/${version}/mattermost-team-${version}-linux-amd64.tar.gz
-wget https://releases.mattermost.com/${version}/mattermost-${version}-linux-amd64.tar.gz
-wget https://releases.mattermost.com/mattermost-load-test/mattermost-load-test.tar.gz
-mv mattermost-load-test.tar.gz mattermost-load-test-${version}.tar.gz
+curl https://releases.mattermost.com/mattermost-load-test/mattermost-load-test.tar.gz -o mattermost-load-test-${version}.tar.gz
+curl https://releases.mattermost.com/${version}/mattermost-team-${version}-linux-amd64.tar.gz -O
+curl https://releases.mattermost.com/${version}/mattermost-${version}-linux-amd64.tar.gz -O
+
+ls -al
