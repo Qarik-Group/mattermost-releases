@@ -37,6 +37,7 @@ groups:
   - name: (( grab meta.pipeline ))
     jobs:
       - check-version
+      - update
 
 jobs:
   - name: check-version
@@ -76,6 +77,44 @@ jobs:
           username: (( grab meta.slack.username ))
           icon_url: (( grab meta.slack.icon ))
           text:    '(( concat meta.slack.fail_url " " meta.pipeline ": \"check-version\" job failed" ))'
+
+  - name: update
+    public: true
+    serial: true
+    plan:
+    - do:
+      - name: git,
+        get: git
+        passed: [check-version]
+      - name: version
+        get: version
+        trigger: true
+        passed: [check-version]
+      - name: fetch-blobs
+        task: fetch-blobs
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: (( grab meta.image.name ))
+              tag:        (( grab meta.image.tag ))
+          inputs:
+            - name: git
+            - name: version
+          outputs:
+            - name: blobs
+          run:
+            path: ./git/ci/scripts/fetch-blobs
+            args: []
+
+      on_failure:
+        put: notify
+        params:
+          channel:  (( grab meta.slack.channel ))
+          username: (( grab meta.slack.username ))
+          icon_url: (( grab meta.slack.icon ))
+          text:    '(( concat meta.slack.fail_url " " meta.pipeline ": \"update\" job failed" ))'
 
 resource_types:
   - name: slack-notification
