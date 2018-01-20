@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=$(curl -s https://about.mattermost.com/download/ | grep "Latest Release:" | head -n1 | sed -e "s%Latest Release: *%%")
+version=$(curl -s https://about.mattermost.com/download/ | grep "Latest Release:" | head -n1 | sed -e "s%^.*Latest Release: *%%" | sed -e "s%<.*$%%")
 echo $version > version/number
 
 echo "Version: $version"
