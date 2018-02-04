@@ -150,7 +150,7 @@ resources:
 
   - name: check-mattermost
     type: time
-    source: {interval: 60m}
+    source: {interval: 3h}
 
   - name: notify
     type: slack-notification
