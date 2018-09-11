@@ -1,6 +1,11 @@
 #!/bin/bash
 
+set -eu
+
 version=$(curl -s https://about.mattermost.com/download/ | grep "Latest Release:" | head -n1 | sed -e "s%^.*Latest Release: *%%" | sed -e "s%<.*$%%")
+
+: ${version:?failed to extract version from upstream page}
+
 echo $version > version/number
 
 echo "Version: $version"
