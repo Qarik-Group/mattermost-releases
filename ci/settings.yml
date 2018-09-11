@@ -2,7 +2,7 @@
 meta:
   name:    mattermost-releases
   target:  ohio-cf
-  url:     https://ci-ohio.starkandwayne.com
+  url:     https://ci2.starkandwayne.com
 
   aws:
     access_key: ((aws-cfcommunity-access))
