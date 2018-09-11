@@ -2,7 +2,7 @@
 
 set -eu
 
-version=$(curl -s https://about.mattermost.com/download/ | grep "Latest Release:" | head -n1 | sed -e "s%^.*Latest Release: *%%" | sed -e "s%<.*$%%")
+version=$(curl -s https://mattermost.com/download/ | grep "Latest Release:" | head -n1 | egrep -o '[0-9]+\.[0-9]+\.[0-9]+')
 
 : ${version:?failed to extract version from upstream page}
 
